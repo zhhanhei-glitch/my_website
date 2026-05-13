@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spoon Studio | 勺子设计</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .image-loaded { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 font-sans antialiased selection:bg-gray-200">
+
+    <!-- 顶部导航栏 -->
+    <nav class="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-xl font-bold tracking-widest uppercase">
+                        Spoon Studio<span class="text-gray-400 font-normal ml-2 text-sm">勺子设计</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-500 hover:text-black transition-colors text-sm tracking-wide">Work</a>
+                    <a href="#" class="text-gray-500 hover:text-black transition-colors text-sm tracking-wide">About</a>
+                    <a href="#" class="text-gray-500 hover:text-black transition-colors text-sm tracking-wide">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主展示区 (瀑布流容器，内容由JS动态注入) -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div id="gallery" class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6">
+            <!-- 图片将在这里自动生成 -->
+        </div>
+    </main>
+
+    <!-- 灯箱 (点击图片放大展示区域) -->
+    <div id="lightbox" class="fixed inset-0 z-50 hidden bg-white/95 backdrop-blur-sm items-center justify-center p-4 sm:p-8 opacity-0 transition-opacity duration-300" onclick="closeLightbox()">
+        <button class="absolute top-6 right-6 text-gray-500 hover:text-black focus:outline-none z-50">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <img id="lightbox-img" src="" alt="放大查看" class="max-w-full max-h-full object-contain shadow-2xl transition-transform duration-300 scale-95" onclick="event.stopPropagation();">
+    </div>
+
+    <!-- 交互与图片生成逻辑 -->
+    <script>
+        // --- 1. 动态生成图片库 ---
+        const gallery = document.getElementById('gallery');
+        const totalImages = 18; // 如果未来有更多图片，只需修改这个数字
+        const imageExtension = '.jpg'; // 确保你的图片后缀是 jpg，如果是 png 请修改这里
+
+        let galleryHTML = '';
+        for (let i = 1; i <= totalImages; i++) {
+            // 采用相对路径加载图片
+            const imgPath = `images/${i}${imageExtension}`;
+            // 拼接 HTML 结构，加入 mb-6 确保上下间距，加入 loading="lazy" 优化性能
+            galleryHTML += `
+                <div class="break-inside-avoid group cursor-zoom-in mb-6">
+                    <img src="${imgPath}" alt="勺子设计项目 ${i}" 
+                         class="w-full object-cover bg-gray-50 hover:opacity-90 transition-opacity duration-300 image-loaded"
+                         style="animation-delay: ${i * 0.05}s;" 
+                         loading="lazy"
+                         onclick="openLightbox(this.src)"
+                         onerror="this.parentElement.style.display='none'"> 
+                </div>
+            `;
+        }
+        gallery.innerHTML = galleryHTML;
+
+        // --- 2. 灯箱交互逻辑 ---
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+
+        function openLightbox(imageSrc) {
+            lightboxImg.src = imageSrc;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+            setTimeout(() => {
+                lightbox.classList.remove('opacity-0');
+                lightboxImg.classList.remove('scale-95');
+                lightboxImg.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.add('opacity-0');
+            lightboxImg.classList.remove('scale-100');
+            lightboxImg.classList.add('scale-95');
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                lightbox.classList.remove('flex');
+                lightboxImg.src = '';
+            }, 300);
+            document.body.style.overflow = 'auto';
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && !lightbox.classList.contains('hidden')) {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
